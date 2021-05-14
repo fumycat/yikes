@@ -1,4 +1,5 @@
 import os
+import subprocess
 from flask import Flask
 from flask import request
 from flask import make_response
@@ -38,18 +39,14 @@ def upload():
     with open('file1.txt', 'w') as f:
         f.write(request.form.get('text1'))
 
-    return make_response('ok')
-    # if 'file' not in request.files:
-    #     print('No file part')
-    #     return make_response('no file')
-    # file = request.files['file']
-    # if file.filename == '':
-    #     print('No selected file')
-    #     return make_response('No selected file')
-    # if file:
-    #     filename = secure_filename(file.filename)
-    #     file.save(os.path.join('', filename))
-    #     return make_response('ok')
+    print("Got files")
+    r = subprocess.run(["./a.out", "file0.txt", "file1.txt"])
+    print(r)
+    if r.returncode == 0:
+        with open('out.txt', 'r') as f:
+            return make_response(f.read())
+    else:
+        return make_response('error')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=6677, debug=True)
