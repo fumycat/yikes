@@ -27,7 +27,7 @@ __global__ void multKernel(float* A, float* B, float* C, int n) {
 int main(int argc, char const *argv[])
 {
     if (argc < 3) {
-        cout << "Input file not specified. Please, specify it as a first argument." << endl;
+        cout << "input files not specified" << endl;
         cout << "example: " << argv[0] << "file0.txt file1.txt" << endl;
         return -1;
     }

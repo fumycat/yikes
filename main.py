@@ -10,18 +10,15 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route('/ajax/', methods=['POST'])
-def ajax_sum():
-    '''
+@app.route('/t', methods=['POST'])
+def t():
     print(request)
     print(request.method)
     print(request.headers)
-    print(request.data)
-    print(request.get_json())
-    '''
-    rdata = request.get_json()
-    print(rdata)
-    return make_response(str(int(rdata.get('p1')) + int(rdata.get('p2')) + int(rdata.get('p3'))))
+    print(request.files)
+    print(request.form)
+    print('data', request.data)
+    return make_response('t ok')
 
 @app.route('/upload/', methods=['POST'])
 def upload():
@@ -46,7 +43,7 @@ def upload():
         with open('out.txt', 'r') as f:
             return make_response(f.read())
     else:
-        return make_response('error')
+        return make_response('error', 500) # 500 Internal Server Error
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=6677, debug=True)
