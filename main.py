@@ -10,26 +10,26 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route('/t', methods=['POST'])
+@app.route('/t/', methods=['POST'])
 def t():
     print(request)
     print(request.method)
     print(request.headers)
-    print(request.files)
-    print(request.form)
+    print('files', request.files)
+    print('form', request.form)
     print('data', request.data)
     return make_response('t ok')
 
 @app.route('/upload/', methods=['POST'])
 def upload():
-    '''
+    
     print(request)
     print(request.method)
     print(request.headers)
-    print(request.files)
-    print(request.form)
+    print('files', request.files)
+    print('form', request.form)
     print('data', request.data)
-    '''
+    
     with open('file0.txt', 'w') as f:
         f.write(request.form.get('text0'))
     
