@@ -1,5 +1,7 @@
 import os
+import uuid
 import subprocess
+from contextlib import suppress
 from flask import Flask
 from flask import request
 from flask import make_response
@@ -10,40 +12,69 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route('/t/', methods=['POST'])
-def t():
+def debug_request(request):
     print(request)
-    print(request.method)
-    print(request.headers)
+    # print(request.method)
+    # print(request.headers)
     print('files', request.files)
     print('form', request.form)
     print('data', request.data)
+
+def check_input(mat_str):
+    l = mat_str.split('\n')
+    lines_count = int(l[0])
+    assert lines_count == len(l) - 1
+    for line in l[1:]:
+        # print(lines_count, len(line.split()))
+        assert lines_count == len(line.split())
+    return True
+
+def process_matrix_mult(data):
+    if len(data) != 2:
+        raise Exception('Bad data')
+    *f, o = map(str, [uuid.uuid4() for _ in range(3)])
+    for i, filename in enumerate(f):
+        with open(filename, 'w') as file:
+            file.write(data[i])
+    # print('Input writing done')
+    r = subprocess.run(['./a.out', o, *f])
+    # print('Kernel done')
+    print(r)
+    output = ''
+    if r.returncode == 0:
+        with open(o, 'r') as file:
+            output = file.read()
+    elif r.returncode == -1:
+        raise Exception('Bad arguments')
+    elif r.returncode == -2:
+        raise Exception('Can\'t open files')
+    elif r.returncode == -3:
+        raise Exception('Dimensions error')
+    
+    with suppress(FileNotFoundError):
+        for filename in f + [o]:
+            os.remove(filename)
+    return output
+
+
+@app.route('/t/', methods=['POST'])
+def t():
+    debug_request(request)
     return make_response('t ok')
 
 @app.route('/upload/', methods=['POST'])
 def upload():
+    debug_request(request)
+    # check_input(request.form.get('text0'))
+    # check_input(request.form.get('text1'))
     
-    print(request)
-    print(request.method)
-    print(request.headers)
-    print('files', request.files)
-    print('form', request.form)
-    print('data', request.data)
-    
-    with open('file0.txt', 'w') as f:
-        f.write(request.form.get('text0'))
-    
-    with open('file1.txt', 'w') as f:
-        f.write(request.form.get('text1'))
+    try:
+        result = process_matrix_mult((request.form.get('text0'), request.form.get('text1')))
+        return make_response(result)
+    except BaseException as e:
+        print(type(e), e)
+        return make_response(str(e), 500) # 500 Internal Server Error
 
-    print("Got files")
-    r = subprocess.run(["./a.out", "file0.txt", "file1.txt"])
-    print(r)
-    if r.returncode == 0:
-        with open('out.txt', 'r') as f:
-            return make_response(f.read())
-    else:
-        return make_response('error', 500) # 500 Internal Server Error
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=6677, debug=True)

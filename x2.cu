@@ -26,30 +26,35 @@ __global__ void multKernel(float* A, float* B, float* C, int n) {
 
 int main(int argc, char const *argv[])
 {
+    /*
+        Error codes:
+            -1: bad arguments
+            -2: error while opening files
+            -3: dimensions error
+    */
     if (argc < 3) {
-        cout << "input files not specified" << endl;
-        cout << "example: " << argv[0] << "file0.txt file1.txt" << endl;
-        return -1;
+        return -1; // ./executable out.txt input0.txt input1.txt
     }
 
-    ifstream f0(argv[1]);
-    ifstream f1(argv[2]);
-    ofstream output("out.txt");
+    ofstream output(argv[1]);
+    ifstream f0(argv[2]);
+    ifstream f1(argv[3]);
+
     if (!f0) {
-        cout << "f0 err" << endl;
-        return -1;
+        // cout << "f0 err" << endl;
+        return -2;
     }
     if (!f1) {
-        cout << "f1 err" << endl;
-        return -1;
+        // cout << "f1 err" << endl;
+        return -2;
     }
 
     int n, zn;
     f0 >> n;
     f1 >> zn;
     if (n != zn) {
-        cout << "dim error" << endl;
-        return -1;
+        // cout << "dim error" << endl;
+        return -3;
     }
 
     thrust::host_vector<float> host_a(n * n), host_b(n * n);
