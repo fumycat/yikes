@@ -20,6 +20,7 @@ def debug_request(request):
     print('form', request.form)
     print('data', request.data)
 
+
 def check_input(mat_str):
     l = mat_str.split('\n')
     lines_count = int(l[0])
@@ -28,6 +29,7 @@ def check_input(mat_str):
         # print(lines_count, len(line.split()))
         assert lines_count == len(line.split())
     return True
+
 
 def process_matrix_mult(data):
     if len(data) != 2:
@@ -52,6 +54,7 @@ def process_matrix_mult(data):
 def t():
     debug_request(request)
     return make_response('t ok')
+
 
 @app.route('/upload/', methods=['POST'])
 def upload():
