@@ -33,28 +33,32 @@ int main(int argc, char const *argv[])
             -3: dimensions error
     */
     if (argc < 3) {
-        return -1; // ./executable out.txt input0.txt input1.txt
+        return 1; // ./executable out.txt input0.txt input1.txt
     }
 
     ofstream output(argv[1]);
     ifstream f0(argv[2]);
     ifstream f1(argv[3]);
-
+    
+    if (!output) {
+        return 2;
+    }
     if (!f0) {
         // cout << "f0 err" << endl;
-        return -2;
+        return 2;
     }
     if (!f1) {
         // cout << "f1 err" << endl;
-        return -2;
+        return 2;
     }
 
     int n, zn;
     f0 >> n;
     f1 >> zn;
+
     if (n != zn) {
         // cout << "dim error" << endl;
-        return -3;
+        return 3;
     }
 
     thrust::host_vector<float> host_a(n * n), host_b(n * n);

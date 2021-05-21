@@ -32,29 +32,20 @@ def check_input(mat_str):
 def process_matrix_mult(data):
     if len(data) != 2:
         raise Exception('Bad data')
-    *f, o = map(str, [uuid.uuid4() for _ in range(3)])
+    *f, o = map(str, ['/tmp/' + str(uuid.uuid4()) for _ in range(3)])
     for i, filename in enumerate(f):
         with open(filename, 'w') as file:
             file.write(data[i])
-    # print('Input writing done')
-    r = subprocess.run(['./a.out', o, *f])
-    # print('Kernel done')
-    print(r)
-    output = ''
-    if r.returncode == 0:
+    try:
+        r = subprocess.run(['./a.out', o, *f], check=True)
+        # print('Kernel done')
+        # print(r)
         with open(o, 'r') as file:
-            output = file.read()
-    elif r.returncode == -1:
-        raise Exception('Bad arguments')
-    elif r.returncode == -2:
-        raise Exception('Can\'t open files')
-    elif r.returncode == -3:
-        raise Exception('Dimensions error')
-    
-    with suppress(FileNotFoundError):
-        for filename in f + [o]:
-            os.remove(filename)
-    return output
+            return file.read()
+    finally:
+        with suppress(FileNotFoundError):
+            for filename in f + [o]:
+                os.remove(filename)
 
 
 @app.route('/t/', methods=['POST'])
