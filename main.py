@@ -2,7 +2,9 @@ import os
 import re
 import uuid
 import json
+import tempfile
 import subprocess
+from pathlib import Path
 from contextlib import suppress
 from flask import Flask
 from flask import request
@@ -10,12 +12,16 @@ from flask import make_response
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 
+import mgen
+import mres
+
 app = Flask(__name__)
 CORS(app)
 
 valid_name = re.compile('^[A-Za-z]{1}[A-Za-z0-9]*$')
 
-# nvprof --print-gpu-summary --csv --log-file {log.txt} {./a.out} {params}
+tmp_folder = Path(os.getcwd()) / 'tmpx' # Path(tempfile._get_default_tempdir())
+
 
 def debug_request(request):
     print(request)
@@ -46,9 +52,45 @@ def t():
     # check input
     if any(not valid_name.match(arr['name']) for arr in arrays):
         return make_response('bad array name', 500)
-    # TODO more checks
+    # TODO more checks (len of in array == functor param len)
 
-    response = {'status': 'Ok', 'message': 'Message'}
+    # generate code
+    source_name = Path(next(tempfile._get_candidate_names()) + '.cu')
+    print('source file', source_name)
+    mgen.construct(tmp_folder / source_name, arrays, flow, functors, j.get('t'), j.get('gout'))
+
+    # compile
+    executable_name = Path(next(tempfile._get_candidate_names()))
+    print('executable file', executable_name)
+    try:
+        subprocess.run(['nvcc', source_name, '-o', executable_name], check=True, cwd=tmp_folder)
+    except subprocess.CalledProcessError as e:
+        return make_response(json.dumps({'status': 'Error', 'message': str(e), 'more': 'Compile error'}))
+    finally:
+        with suppress(FileNotFoundError):
+            pass # os.remove(tmp_folder / source_name)
+
+    # execute
+    nvprof_log_name = Path(next(tempfile._get_candidate_names()) + '.log')
+    print('nvprof file', nvprof_log_name)
+    output_name = Path(next(tempfile._get_candidate_names()) + '.txt')
+    ea = [output_name] # todo more args for custom containers
+    try:
+        subprocess.run(['nvprof', '--print-gpu-summary', '--csv', '--log-file', nvprof_log_name, './' + str(executable_name), *ea], check=True, cwd=tmp_folder)
+    except subprocess.CalledProcessError as e:
+        return make_response(json.dumps({'status': 'Error', 'message': str(e), 'more': 'Execute error'}))
+    finally:
+        with suppress(FileNotFoundError):
+            pass # os.remove(tmp_folder / executable_name)
+
+    
+    nvprof_dict = mres.parse_nvprof_log(tmp_folder / nvprof_log_name)
+    result_list = mres.parse_output(tmp_folder / output_name, j.get('t'))
+
+    with suppress(FileNotFoundError):
+        pass # os.remove(output_name) # nvprof_log_name and more(custom containers)
+
+    response = {'status': 'Ok', 'message': 'Message', 'nvprof': nvprof_dict, 'result': result_list}
 
     return make_response(json.dumps(response))
 
