@@ -6,11 +6,11 @@ if [ $# -eq 0 ]
     exit 1
 fi
 
-echo "Adding user $1"
+echo "Adding user(changing password) $1"
 while true; do
     read -s -p "Enter new password: " password
     echo
-    read -s -p "Enter new password(again): " password2
+    read -s -p "Enter password(again): " password2
     echo
     [ "$password" = "$password2" ] && break
     echo "Please try again"
