@@ -16,3 +16,6 @@ clean:
 run: build
 	$(redis_server_exec) $(redis_config_file) &
 	python server.py
+
+debug:
+	python server.py

@@ -1,4 +1,4 @@
 aiohttp==3.7.4.post0
 aioredis==2.0.0a1
 Werkzeug==1.0.1
-jwt==1.2.0
+pyjwt==2.1.0
