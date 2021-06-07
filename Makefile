@@ -1,6 +1,8 @@
 redis_server_exec = ~/redis/redis-6.2.4/src/redis-server
 redis_config_file = ~/redis/redis-6.2.4/redis.conf
 
+.PHONY: build clean run debug
+
 build: bin/gemm
 	python -m pip install -r requirements.txt -q -q
 
