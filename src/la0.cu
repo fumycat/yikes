@@ -49,19 +49,19 @@ int main(int argc, char const* argv[])
     for (i = 0; i < m; i++) {
         for (j = 0; j < k; j++) {
             f0 >> t;
-            a[j * m + i] = t;
+            a[i * k + j] = t;
         }
     }
     for (i = 0; i < k; i++) {
         for (j = 0; j < n; j++) {
             f1 >> t;
-            b[j * m + i] = t;
+            b[i * n + j] = t;
         }
     }
     for (i = 0; i < m; i++) {
         for (j = 0; j < n; j++) {
             f2 >> t;
-            c[j * m + i] = t;
+            c[i * n + j] = t;
         }
     }
 
@@ -91,7 +91,7 @@ int main(int argc, char const* argv[])
     // write file
     for (i = 0; i < m; i++) {
         for (j = 0; j < n; j++) {
-            f3 << c[j * m + i] << " ";
+            f3 << c[i * n + j] << " ";
         }
         f3 << std::endl;
     }
