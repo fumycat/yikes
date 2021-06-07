@@ -39,7 +39,7 @@ def io_write(wd, mode='w'):
             f.write(data)
 
 
-def clean_temp_files(*filenames):
+async def clean_temp_files(*filenames):
     with suppress(FileNotFoundError):
         for i in filenames:
             os.remove(i)
@@ -122,8 +122,7 @@ async def handle_gemm(request):
     with concurrent.futures.ThreadPoolExecutor() as pool:
         result_data = await loop.run_in_executor(pool, io_read, f_Z)
 
-    with concurrent.futures.ThreadPoolExecutor() as pool:
-        await loop.run_in_executor(pool, clean_temp_files, f_A, f_B, f_C, f_Z) 
+    asyncio.create_task(clean_temp_files(f_A, f_B, f_C, f_Z))
 
     return web.json_response({'status': 'Ok', 'message': '', 'result': result_data})
 
