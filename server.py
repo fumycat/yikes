@@ -6,7 +6,7 @@ import asyncio
 import concurrent.futures
 from itertools import islice
 from contextlib import suppress
-from tempfile import _get_candidate_names #, _get_default_tempdir
+from tempfile import _get_candidate_names
 
 import jwt
 import aioredis
@@ -177,7 +177,7 @@ async def handle_gemv(request):
 redis = aioredis.from_url("redis://localhost")
 app = web.Application(client_max_size=MAX_PAYLOAD_SIZE)
 app.add_routes(routes)
-logging.basicConfig(level=logging.INFO) # filename='server.log', 
+logging.basicConfig(filename='server.log', level=logging.INFO)
 
 if __name__ == '__main__':
     web.run_app(app, port=X_PORT)
