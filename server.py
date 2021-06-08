@@ -13,6 +13,7 @@ import aioredis
 from aiohttp import web
 from werkzeug.security import check_password_hash
 
+X_PORT=os.environ.get('AIOPORT', 6677)
 MAX_PAYLOAD_SIZE = 2**30 # 1GB
 SECRET_APP_KEY = os.environ['SECRET_KEY'] # may raise exception
 GEMM = 'bin/gemm'
@@ -66,6 +67,7 @@ async def auth(request):
     idata = await request.json()
     username = idata.get('username')
     password = idata.get('password')
+
     if not username or not password or not valid_name.match(username):
         return web.json_response({'status': 'Error', 'message': 'Provide username and password'})
 
@@ -78,8 +80,10 @@ async def auth(request):
 
     if check_password_hash(p_hash, password):
         token = jwt.encode({'username' : username}, SECRET_APP_KEY)
+        logging.info(f'{username} successful login')
         return web.json_response({'status': 'Ok', 'token': token})
     else:
+        logging.info(f'{username} unsuccessful login (wrong password)')
         return web.json_response({'status': 'Error', 'message': 'Wrong password'})
 
 
@@ -87,8 +91,10 @@ async def auth(request):
 async def handle_gemm(request):
     loop = asyncio.get_running_loop()
     idata = await request.json()
+
     if (u := check_request_token(idata.get('token'), request.remote)) == None:
         return web.json_response({'status': 'Error', 'message': 'Bad token'})
+
     logging.info(f'request from user {u}')
 
     try:
@@ -98,6 +104,7 @@ async def handle_gemm(request):
         return web.json_response({'status': 'Error', 'message': 'Provide m, n, k'})
 
     f_A, f_B, f_C, f_Z = [i for i in islice(_get_candidate_names(), 4)]
+
     try:
         wd = {f_A: idata['A'], f_B: idata['B'], f_C: idata['C']}
         alpha, beta = idata['alpha'], idata['beta']
@@ -173,4 +180,4 @@ app.add_routes(routes)
 logging.basicConfig(level=logging.INFO) # filename='server.log', 
 
 if __name__ == '__main__':
-    web.run_app(app, port=6677)
+    web.run_app(app, port=X_PORT)
