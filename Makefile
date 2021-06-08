@@ -16,7 +16,7 @@ bin:
 	mkdir -p bin
 
 clean:
-	rm -f bin/gemm
+	rm -rf bin
 
 run: build
 	$(redis_server_exec) $(redis_config_file) &
