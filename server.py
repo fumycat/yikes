@@ -135,8 +135,36 @@ async def handle_gemv(request):
         return web.json_response({'status': 'Error', 'message': 'Bad token'})
     logging.info(f'request from user {u}')
 
+    try:
+        m, n = idata['m'], idata['n']
+    except KeyError:
+        logging.info(f'user {u} got bad data (m/n)')
+        return web.json_response({'status': 'Error', 'message': 'Provide m, n'})
 
-    return web.json_response({'status': 'Ok', 'message': 'Message'})
+    f_A, f_x, f_y, f_Z = [i for i in islice(_get_candidate_names(), 4)]
+    try:
+        wd = {f_A: idata['A'], f_x: idata['x'], f_y: idata['y']}
+        alpha, beta = idata['alpha'], idata['beta']
+    except KeyError:
+        logging.info(f'user {u} got bad data (A/x/y/alpha/beta)')
+        return web.json_response({'status': 'Error', 'message': 'Provide A, x, y, alpha and beta'})
+    else:    
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            await loop.run_in_executor(pool, io_write, wd)
+
+    proc = await asyncio.create_subprocess_shell(
+        f'./{GEMV} {m} {n} {alpha} {beta} {f_A} {f_x} {f_y} {f_Z}',
+        stdout=asyncio.subprocess.DEVNULL,
+        stderr=asyncio.subprocess.DEVNULL)
+    
+    await proc.wait()
+
+    with concurrent.futures.ThreadPoolExecutor() as pool:
+        result_data = await loop.run_in_executor(pool, io_read, f_Z)
+
+    asyncio.create_task(clean_temp_files(f_A, f_x, f_y, f_Z))
+
+    return web.json_response({'status': 'Ok', 'message': '', 'result': result_data})
 
 
 redis = aioredis.from_url("redis://localhost")

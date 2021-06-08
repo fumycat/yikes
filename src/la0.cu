@@ -91,7 +91,11 @@ int main(int argc, char const* argv[])
     // write file
     for (i = 0; i < m; i++) {
         for (j = 0; j < n; j++) {
+            #ifdef FLOAT_IO_REPR
+            f3 << FLOAT_IO_REPR << c[i * n + j] << " ";
+            #else
             f3 << c[i * n + j] << " ";
+            #endif
         }
         f3 << std::endl;
     }

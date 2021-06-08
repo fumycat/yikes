@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include "cublas_v2.h"
 
+// #define FLOAT_IO_REPR std::fixed
+
 static void HandleError( cudaError_t err,
                          const char *file,
                          int line ) {

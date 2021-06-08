@@ -85,7 +85,11 @@ int main(int argc, char const* argv[])
 
     // write file
     for (i = 0; i < m; i++) {
+        #ifdef FLOAT_IO_REPR
+        f3 << FLOAT_IO_REPR << y[i];
+        #else
         f3 << y[i];
+        #endif
         if (i == m - 1) 
             f3 << std::endl;
         else
