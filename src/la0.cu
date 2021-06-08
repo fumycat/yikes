@@ -96,5 +96,10 @@ int main(int argc, char const* argv[])
         f3 << std::endl;
     }
 
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+    cublasDestroy(handle);
+
     return 0;
 }
